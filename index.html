@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>video.mp4</title>
+<title>H.A.P.S Fear Assesment</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -16,26 +16,23 @@ body {
   align-items: center;
   height: 100vh;
   overflow: hidden;
-  transition: 1.5s;
+  transition: 1s;
 }
-
 
 body::after {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(255,255,255,0.03) 0px,
-    rgba(255,255,255,0.03) 2px,
+    rgba(255,255,255,0.04) 0px,
+    rgba(255,255,255,0.04) 2px,
     transparent 2px,
     transparent 4px
   );
   pointer-events: none;
-  animation: flicker 0.15s infinite;
+  animation: flicker 0.12s infinite;
 }
 
 @keyframes flicker {
@@ -44,23 +41,22 @@ body::after {
   100% {opacity: 0.85;}
 }
 
-
 .glitch {
-  animation: glitch 0.2s infinite;
+  animation: glitch 0.15s infinite;
 }
 
 @keyframes glitch {
   0% {transform: translate(0);}
-  25% {transform: translate(-3px, 2px);}
-  50% {transform: translate(3px, -2px);}
-  75% {transform: translate(-2px, -3px);}
+  25% {transform: translate(-4px, 2px);}
+  50% {transform: translate(4px, -2px);}
+  75% {transform: translate(-2px, -4px);}
   100% {transform: translate(0);}
 }
 
-/* SCREENS */
+
 #container {
   text-align: center;
-  max-width: 600px;
+  max-width: 650px;
 }
 
 button {
@@ -71,8 +67,6 @@ button {
 
 .flash {
   position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   background: black;
@@ -100,15 +94,50 @@ button {
 <body>
 
 <div id="container">
-  <h1 id="title">⚠ FLASHING LIGHTS WARNING ⚠</h1>
-  <p id="text">This program contains flashing images.<br>Viewer discretion is advised.</p>
+  <h1>⚠ FLASHING LIGHTS WARNING ⚠</h1>
+  <p>This program contains flashing images.<br>Viewer discretion is advised.</p>
   <button onclick="startIntro()">Continue</button>
 </div>
 
 <div id="flash" class="flash">DONT LOOK BEHIND YOU</div>
 
 <script>
-let step = 0;
+let level = 0;
+let index = 0;
+
+const levels = [
+  [
+    "Do you feel safe right now?",
+    "Are you alone?",
+    "Do you trust this program?"
+  ],
+  [
+    "Have you checked behind you?",
+    "Why haven't you?",
+    "You should."
+  ],
+  [
+    "Something is there.",
+    "It is watching you.",
+    "It sees everything."
+  ],
+  [
+    "Why are you still here?",
+    "You were told to leave.",
+    "It followed you."
+  ]
+];
+
+
+const watcherLines = [
+  "YOU KEPT WATCHING.",
+  "THAT WAS YOUR FIRST MISTAKE.",
+  "I CAN SEE YOU.",
+  "TURN AROUND.",
+  "NO… DON'T.",
+  "STAY STILL.",
+  "I AM RIGHT BEHIND YOU."
+];
 
 
 function startIntro() {
@@ -125,7 +154,7 @@ function startIntro() {
       document.body.classList.add("blue");
 
       setTimeout(() => {
-        startAssessment();
+        startGame();
       }, 3000);
 
     }, 3000);
@@ -134,57 +163,55 @@ function startIntro() {
 }
 
 
-const questions = [
-  "Do you feel safe right now?",
-  "Do you feel like someone is watching you?",
-  "Do you trust what you see on your screen?",
-  "Have you checked behind you recently?",
-  "Why haven't you checked?",
-  "You should look.",
-  "Something is there.",
-  "It sees you.",
-  "Why are you still here?",
-  "It knows you are watching.",
-  "You shouldn't have opened this.",
-  "It followed you.",
-  "Do not turn around.",
-  "DONT LOOK BEHIND YOU."
-];
+function startGame() {
+  level = 0;
+  index = 0;
+  renderQuestion();
+}
 
-function startAssessment() {
+
+function renderQuestion() {
   document.getElementById("container").innerHTML = `
-    <h1>H.A.P.S Fear Assessment</h1>
-    <p id="question">${questions[0]}</p>
-    <button onclick="next()">Yes / No</button>
+    <h2>Level ${level + 1}</h2>
+    <p id="question">${levels[level][index]}</p>
+    <button onclick="next()">Continue</button>
   `;
 }
 
 
 function next() {
-  step++;
+  index++;
 
-  if (step < questions.length) {
-    document.getElementById("question").innerText = questions[step];
+  if (index >= levels[level].length) {
+    level++;
+    index = 0;
   }
 
-  if (step === 5) glitchText();
-  if (step === 8) flashWarning();
-
-  if (step >= questions.length) {
-    endSequence();
+  if (level < levels.length) {
+    renderQuestion();
+  } else {
+    startWatcher();
   }
+
+  if (level >= 2) glitchText();
+  if (level >= 3) flashWarning();
 }
 
 
 function glitchText() {
   let q = document.getElementById("question");
+  if (!q) return;
+
   let original = q.innerText;
 
   setInterval(() => {
-    q.innerText = Math.random() > 0.5 ? original : "IT SEES YOU";
-  }, 150);
+    if (Math.random() > 0.6) {
+      q.innerText = "IT SEES YOU";
+    } else {
+      q.innerText = original;
+    }
+  }, 200);
 }
-
 
 function flashWarning() {
   setInterval(() => {
@@ -194,7 +221,28 @@ function flashWarning() {
     setTimeout(() => {
       flash.style.opacity = 0;
     }, 120);
-  }, 2000);
+  }, 1800);
+}
+
+/* WATCHER TAKEOVER */
+function startWatcher() {
+  let i = 0;
+
+  document.body.classList.add("glitch");
+
+  function nextLine() {
+    if (i < watcherLines.length) {
+      document.getElementById("container").innerHTML = `
+        <h1>${watcherLines[i]}</h1>
+      `;
+      i++;
+      setTimeout(nextLine, 2000);
+    } else {
+      endGame();
+    }
+  }
+
+  nextLine();
 }
 
 
@@ -207,12 +255,14 @@ setInterval(() => {
 
 }, 120000);
 
+/* END */
+function endGame() {
+  document.body.className = "";
+  document.body.style.background = "black";
 
-function endSequence() {
-  document.body.className = "blackout";
   document.getElementById("container").innerHTML = `
-    <h1>Assessment Complete</h1>
-    <p>H.A.P.S Fear Assessment Created By: Dr Caldwell</p>
+    <h1>This game was coded and created by:</h1>
+    <h2>GStudios</h2>
   `;
 }
 </script>
