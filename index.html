@@ -19,7 +19,7 @@ body {
   transition: 1s;
 }
 
-
+/* VHS */
 body::after {
   content: "";
   position: fixed;
@@ -42,7 +42,7 @@ body::after {
   100% {opacity: 0.85;}
 }
 
-
+/* GLITCH */
 .glitch {
   animation: glitch 0.15s infinite;
 }
@@ -55,6 +55,39 @@ body::after {
   100% {transform: translate(0);}
 }
 
+/* BUTTON BREAK EFFECT */
+.broken button {
+  position: relative;
+  animation: shake 0.2s infinite;
+}
+
+.broken button::before,
+.broken button::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: red;
+  left: 0;
+}
+
+.broken button::before {
+  top: 30%;
+  transform: rotate(10deg);
+}
+
+.broken button::after {
+  top: 70%;
+  transform: rotate(-10deg);
+}
+
+@keyframes shake {
+  0% {transform: translate(0);}
+  50% {transform: translate(2px, -2px);}
+  100% {transform: translate(0);}
+}
+
+/* UI */
 #container {
   text-align: center;
   max-width: 650px;
@@ -107,54 +140,55 @@ let level = 0;
 let index = 0;
 let flashInterval = null;
 
-
+/* LEVELS */
 const levels = [
   {
     name: "LEVEL 1: BASIC EVALUATION",
     questions: [
-      "Do you feel safe right now?",
-      "Are you alone?",
-      "Would you rather stay here or leave?"
+      {text:"Do you feel safe right now?", type:"yn"},
+      {text:"Are you alone?", type:"yn"},
+      {text:"Would you rather stay here or leave?", type:"wyr", a:"Stay", b:"Leave"}
     ]
   },
   {
     name: "LEVEL 2: AWARENESS",
     questions: [
-      "Do you feel watched?",
-      "Have you checked behind you?",
-      "Would you rather look now or later?"
+      {text:"Do you feel watched?", type:"yn"},
+      {text:"Have you checked behind you?", type:"yn"},
+      {text:"Would you rather look now or later?", type:"wyr", a:"Now", b:"Later"}
     ]
   },
   {
     name: "LEVEL 3: PRESENCE",
     questions: [
-      "Something is there. Do you believe it?",
-      "It is watching you. Do you accept that?",
-      "Would you rather ignore it or face it?"
+      {text:"Something is there. Do you believe it?", type:"yn"},
+      {text:"It is watching you. Do you accept that?", type:"yn"},
+      {text:"Would you rather ignore it or face it?", type:"wyr", a:"Ignore it", b:"Face it"}
     ]
   },
   {
     name: "LEVEL 4: REALISATION",
     questions: [
-      "Why are you still here?",
-      "You were told to leave. Why didn't you?",
-      "Would you rather stay… or turn around?"
+      {text:"Why are you still here?", type:"yn"},
+      {text:"You were told to leave. Why didn't you?", type:"yn"},
+      {text:"Would you rather stay… or turn around?", type:"wyr", a:"Stay", b:"Turn around"}
     ]
   }
 ];
 
-
+/* WATCHER */
 const watcherLines = [
   "YOU KEPT WATCHING.",
   "THAT WAS YOUR FIRST MISTAKE.",
   "I CAN SEE YOU.",
-  "TURN AROUND.",
-  "NO… DON'T.",
-  "TOO LATE.",
+  "STOP CLICKING.",
+  "YOU DON'T CONTROL THIS.",
+  "LOOK AT THE BUTTONS.",
+  "I BROKE THEM.",
   "I AM RIGHT BEHIND YOU."
 ];
 
-
+/* INTRO */
 function startIntro() {
   document.body.classList.add("glitch");
 
@@ -167,40 +201,45 @@ function startIntro() {
 
     setTimeout(() => {
       document.body.classList.add("blue");
-
       setTimeout(startGame, 3000);
     }, 3000);
 
   }, 1500);
 }
 
-
+/* START */
 function startGame() {
   level = 0;
   index = 0;
   showLevelIntro();
 }
 
-
 function showLevelIntro() {
-  document.getElementById("container").innerHTML = `
-    <h1>${levels[level].name}</h1>
-  `;
-
+  document.getElementById("container").innerHTML = `<h1>${levels[level].name}</h1>`;
   setTimeout(renderQuestion, 2000);
 }
 
-
 function renderQuestion() {
+  let q = levels[level].questions[index];
+
+  let buttons = "";
+
+  if (q.type === "yn") {
+    buttons = `<button onclick="next()">YES</button>
+               <button onclick="next()">NO</button>`;
+  } else {
+    buttons = `<button onclick="next()">${q.a}</button>
+               <button onclick="next()">${q.b}</button>`;
+  }
+
   document.getElementById("container").innerHTML = `
     <h2>${levels[level].name}</h2>
-    <p id="question">${levels[level].questions[index]}</p>
-    <button onclick="next()">YES</button>
-    <button onclick="next()">NO</button>
+    <p id="question">${q.text}</p>
+    ${buttons}
   `;
 }
 
-
+/* NEXT */
 function next() {
   index++;
 
@@ -223,7 +262,7 @@ function next() {
   if (level >= 3) startFlash();
 }
 
-
+/* GLITCH TEXT */
 function glitchText() {
   let q = document.getElementById("question");
   if (!q) return;
@@ -235,63 +274,72 @@ function glitchText() {
   }, 200);
 }
 
-
+/* FLASH */
 function startFlash() {
   if (flashInterval) return;
 
   flashInterval = setInterval(() => {
     let flash = document.getElementById("flash");
     flash.style.opacity = 1;
-
-    setTimeout(() => {
-      flash.style.opacity = 0;
-    }, 120);
+    setTimeout(() => flash.style.opacity = 0, 120);
   }, 1800);
 }
 
-
+/* WATCHER */
 function startWatcher() {
   let i = 0;
   document.body.classList.add("glitch");
+  document.body.classList.add("broken");
 
   function nextLine() {
     if (i < watcherLines.length) {
-      document.getElementById("container").innerHTML = `
-        <h1>${watcherLines[i]}</h1>
-      `;
+      document.getElementById("container").innerHTML = `<h1>${watcherLines[i]}</h1>`;
       i++;
       setTimeout(nextLine, 2000);
     } else {
-      endGame();
+      fakeError();
     }
   }
 
   nextLine();
 }
 
-
-setInterval(() => {
-  document.body.classList.add("glitch");
+/* FAKE ERROR */
+function fakeError() {
+  document.body.className = "";
+  document.body.style.background = "black";
+  document.getElementById("container").innerHTML = `
+    <h1>ERROR</h1>
+    <p>Signal Lost.</p>
+    <p>Attempting Recovery...</p>
+  `;
 
   setTimeout(() => {
-    document.body.classList.remove("glitch");
-  }, 2000);
+    document.body.classList.add("glitch");
+  }, 1000);
 
-}, 120000);
+  setTimeout(endGame, 3000);
+}
 
-
+/* END */
 function endGame() {
-  document.body.className = "blackout";
-
-
   clearInterval(flashInterval);
   document.getElementById("flash").style.opacity = 0;
+
+  document.body.className = "blackout";
 
   document.getElementById("container").innerHTML = `
     <h1>This game was coded and created by:</h1>
     <h2>GStudios</h2>
   `;
 }
+
+/* 2 MIN GLITCH */
+setInterval(() => {
+  document.body.classList.add("glitch");
+  setTimeout(() => document.body.classList.remove("glitch"), 2000);
+}, 120000);
+
 </script>
 
 </body>
