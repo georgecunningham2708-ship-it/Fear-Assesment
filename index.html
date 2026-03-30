@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>H.A.P.S Fear Assesment</title>
+<title>video.mp4</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -18,6 +18,7 @@ body {
   overflow: hidden;
   transition: 1s;
 }
+
 
 body::after {
   content: "";
@@ -41,6 +42,7 @@ body::after {
   100% {opacity: 0.85;}
 }
 
+
 .glitch {
   animation: glitch 0.15s infinite;
 }
@@ -53,14 +55,13 @@ body::after {
   100% {transform: translate(0);}
 }
 
-
 #container {
   text-align: center;
   max-width: 650px;
 }
 
 button {
-  margin-top: 20px;
+  margin: 10px;
   padding: 10px 20px;
   cursor: pointer;
 }
@@ -104,28 +105,42 @@ button {
 <script>
 let level = 0;
 let index = 0;
+let flashInterval = null;
+
 
 const levels = [
-  [
-    "Do you feel safe right now?",
-    "Are you alone?",
-    "Do you trust this program?"
-  ],
-  [
-    "Have you checked behind you?",
-    "Why haven't you?",
-    "You should."
-  ],
-  [
-    "Something is there.",
-    "It is watching you.",
-    "It sees everything."
-  ],
-  [
-    "Why are you still here?",
-    "You were told to leave.",
-    "It followed you."
-  ]
+  {
+    name: "LEVEL 1: BASIC EVALUATION",
+    questions: [
+      "Do you feel safe right now?",
+      "Are you alone?",
+      "Would you rather stay here or leave?"
+    ]
+  },
+  {
+    name: "LEVEL 2: AWARENESS",
+    questions: [
+      "Do you feel watched?",
+      "Have you checked behind you?",
+      "Would you rather look now or later?"
+    ]
+  },
+  {
+    name: "LEVEL 3: PRESENCE",
+    questions: [
+      "Something is there. Do you believe it?",
+      "It is watching you. Do you accept that?",
+      "Would you rather ignore it or face it?"
+    ]
+  },
+  {
+    name: "LEVEL 4: REALISATION",
+    questions: [
+      "Why are you still here?",
+      "You were told to leave. Why didn't you?",
+      "Would you rather stay… or turn around?"
+    ]
+  }
 ];
 
 
@@ -135,7 +150,7 @@ const watcherLines = [
   "I CAN SEE YOU.",
   "TURN AROUND.",
   "NO… DON'T.",
-  "STAY STILL.",
+  "TOO LATE.",
   "I AM RIGHT BEHIND YOU."
 ];
 
@@ -153,10 +168,7 @@ function startIntro() {
     setTimeout(() => {
       document.body.classList.add("blue");
 
-      setTimeout(() => {
-        startGame();
-      }, 3000);
-
+      setTimeout(startGame, 3000);
     }, 3000);
 
   }, 1500);
@@ -166,15 +178,25 @@ function startIntro() {
 function startGame() {
   level = 0;
   index = 0;
-  renderQuestion();
+  showLevelIntro();
+}
+
+
+function showLevelIntro() {
+  document.getElementById("container").innerHTML = `
+    <h1>${levels[level].name}</h1>
+  `;
+
+  setTimeout(renderQuestion, 2000);
 }
 
 
 function renderQuestion() {
   document.getElementById("container").innerHTML = `
-    <h2>Level ${level + 1}</h2>
-    <p id="question">${levels[level][index]}</p>
-    <button onclick="next()">Continue</button>
+    <h2>${levels[level].name}</h2>
+    <p id="question">${levels[level].questions[index]}</p>
+    <button onclick="next()">YES</button>
+    <button onclick="next()">NO</button>
   `;
 }
 
@@ -182,19 +204,23 @@ function renderQuestion() {
 function next() {
   index++;
 
-  if (index >= levels[level].length) {
+  if (index >= levels[level].questions.length) {
     level++;
     index = 0;
+
+    if (level < levels.length) {
+      showLevelIntro();
+      return;
+    } else {
+      startWatcher();
+      return;
+    }
   }
 
-  if (level < levels.length) {
-    renderQuestion();
-  } else {
-    startWatcher();
-  }
+  renderQuestion();
 
   if (level >= 2) glitchText();
-  if (level >= 3) flashWarning();
+  if (level >= 3) startFlash();
 }
 
 
@@ -205,16 +231,15 @@ function glitchText() {
   let original = q.innerText;
 
   setInterval(() => {
-    if (Math.random() > 0.6) {
-      q.innerText = "IT SEES YOU";
-    } else {
-      q.innerText = original;
-    }
+    q.innerText = Math.random() > 0.6 ? "IT SEES YOU" : original;
   }, 200);
 }
 
-function flashWarning() {
-  setInterval(() => {
+
+function startFlash() {
+  if (flashInterval) return;
+
+  flashInterval = setInterval(() => {
     let flash = document.getElementById("flash");
     flash.style.opacity = 1;
 
@@ -224,10 +249,9 @@ function flashWarning() {
   }, 1800);
 }
 
-/* WATCHER TAKEOVER */
+
 function startWatcher() {
   let i = 0;
-
   document.body.classList.add("glitch");
 
   function nextLine() {
@@ -255,10 +279,13 @@ setInterval(() => {
 
 }, 120000);
 
-/* END */
+
 function endGame() {
-  document.body.className = "";
-  document.body.style.background = "black";
+  document.body.className = "blackout";
+
+
+  clearInterval(flashInterval);
+  document.getElementById("flash").style.opacity = 0;
 
   document.getElementById("container").innerHTML = `
     <h1>This game was coded and created by:</h1>
