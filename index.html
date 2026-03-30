@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>video.mp4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  background: black;
+  color: white;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  transition: 1.5s;
+}
+
+
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.03) 0px,
+    rgba(255,255,255,0.03) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events: none;
+  animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+  0% {opacity: 0.9;}
+  50% {opacity: 1;}
+  100% {opacity: 0.85;}
+}
+
+
+.glitch {
+  animation: glitch 0.2s infinite;
+}
+
+@keyframes glitch {
+  0% {transform: translate(0);}
+  25% {transform: translate(-3px, 2px);}
+  50% {transform: translate(3px, -2px);}
+  75% {transform: translate(-2px, -3px);}
+  100% {transform: translate(0);}
+}
+
+/* SCREENS */
+#container {
+  text-align: center;
+  max-width: 600px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  color: red;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.blue {
+  background: #001a33;
+  color: #66aaff;
+}
+
+.blackout {
+  background: black;
+  color: red;
+}
+</style>
+</head>
+
+<body>
+
+<div id="container">
+  <h1 id="title">⚠ FLASHING LIGHTS WARNING ⚠</h1>
+  <p id="text">This program contains flashing images.<br>Viewer discretion is advised.</p>
+  <button onclick="startIntro()">Continue</button>
+</div>
+
+<div id="flash" class="flash">DONT LOOK BEHIND YOU</div>
+
+<script>
+let step = 0;
+
+
+function startIntro() {
+  document.body.classList.add("glitch");
+
+  setTimeout(() => {
+    document.body.classList.remove("glitch");
+
+    document.getElementById("container").innerHTML = `
+      <p>Please turn off all your lights until the assessment is finished.</p>
+    `;
+
+    setTimeout(() => {
+      document.body.classList.add("blue");
+
+      setTimeout(() => {
+        startAssessment();
+      }, 3000);
+
+    }, 3000);
+
+  }, 1500);
+}
+
+
+const questions = [
+  "Do you feel safe right now?",
+  "Do you feel like someone is watching you?",
+  "Do you trust what you see on your screen?",
+  "Have you checked behind you recently?",
+  "Why haven't you checked?",
+  "You should look.",
+  "Something is there.",
+  "It sees you.",
+  "Why are you still here?",
+  "It knows you are watching.",
+  "You shouldn't have opened this.",
+  "It followed you.",
+  "Do not turn around.",
+  "DONT LOOK BEHIND YOU."
+];
+
+function startAssessment() {
+  document.getElementById("container").innerHTML = `
+    <h1>H.A.P.S Fear Assessment</h1>
+    <p id="question">${questions[0]}</p>
+    <button onclick="next()">Yes / No</button>
+  `;
+}
+
+
+function next() {
+  step++;
+
+  if (step < questions.length) {
+    document.getElementById("question").innerText = questions[step];
+  }
+
+  if (step === 5) glitchText();
+  if (step === 8) flashWarning();
+
+  if (step >= questions.length) {
+    endSequence();
+  }
+}
+
+
+function glitchText() {
+  let q = document.getElementById("question");
+  let original = q.innerText;
+
+  setInterval(() => {
+    q.innerText = Math.random() > 0.5 ? original : "IT SEES YOU";
+  }, 150);
+}
+
+
+function flashWarning() {
+  setInterval(() => {
+    let flash = document.getElementById("flash");
+    flash.style.opacity = 1;
+
+    setTimeout(() => {
+      flash.style.opacity = 0;
+    }, 120);
+  }, 2000);
+}
+
+
+setInterval(() => {
+  document.body.classList.add("glitch");
+
+  setTimeout(() => {
+    document.body.classList.remove("glitch");
+  }, 2000);
+
+}, 120000);
+
+
+function endSequence() {
+  document.body.className = "blackout";
+  document.getElementById("container").innerHTML = `
+    <h1>Assessment Complete</h1>
+    <p>H.A.P.S Fear Assessment Created By: Dr Caldwell</p>
+  `;
+}
+</script>
+
+</body>
+</html>
